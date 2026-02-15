@@ -3,15 +3,16 @@ name = "live-cx-agent"
 version = "0.1.0"
 description = "A sample ADK agent that uses a long running function call to start a live chat session."
 requires-python = ">=3.12"
+packages = [{include = "agent"}]
 dependencies = [
     "python-dotenv>=1.0.0",
     "google-cloud-aiplatform[adk,agent_engines]",
     "google-cloud-storage"
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["agent"]
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["agent"]

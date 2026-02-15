@@ -11,7 +11,7 @@ from vertexai import agent_engines
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-env_path = Path(__file__).parent / '.env'
+env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 load_dotenv(dotenv_path=env_path)
 
 # Constants
@@ -27,9 +27,9 @@ def date_time_tool() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 root_agent = LlmAgent(
-    name="Reporter",
+    name="live_cx_agent",
     model=MODEL_NAME,
-    description="Live agent",
+    description="Agent demo of transferring to a live agent.",
     instruction="""You are a live chat agent. When an end user requests to be transferred to a live agent
     use the `live_agent_transfer` tool to transfer the user to a live agent. Otherwise allow them to also
     call a date time tool to see the current date and time.
