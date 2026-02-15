@@ -1093,15 +1093,15 @@ name = "live-cx-agent"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "google-adk" },
     { name = "google-cloud-aiplatform", extra = ["adk", "agent-engines"] },
+    { name = "google-cloud-storage" },
     { name = "python-dotenv" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "google-adk", specifier = ">=1.21.0" },
     { name = "google-cloud-aiplatform", extras = ["adk", "agent-engines"] },
+    { name = "google-cloud-storage" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
 ]
 

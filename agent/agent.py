@@ -1,8 +1,10 @@
 import logging
+import asyncio
 from datetime import datetime
 from google.adk.agents import LlmAgent
 from pathlib import Path
 from dotenv import load_dotenv
+from vertexai import agent_engines
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -14,8 +16,9 @@ load_dotenv(dotenv_path=env_path)
 # Constants
 MODEL_NAME = "gemini-2.5-flash"
 
-def live_agent_transfer():
+async def live_agent_transfer():
     """Transfers the user to a live agent."""
+    await asyncio.sleep(5)
     return "Live agent transfer"
 
 
@@ -26,6 +29,7 @@ def date_time_tool() -> str:
 root_agent = LlmAgent(
     name="Reporter",
     model=MODEL_NAME,
+    description="Live agent",
     instruction="""You are a live chat agent. When an end user requests to be transferred to a live agent
     use the `live_agent_transfer` tool to transfer the user to a live agent. Otherwise allow them to also
     call a date time tool to see the current date and time.
@@ -33,13 +37,8 @@ root_agent = LlmAgent(
     tools=[live_agent_transfer, date_time_tool]
 )
 
-from vertexai import agent_engines
-
-# Wrap the agent in an AdkApp object
+# Wrap the agent in an AdkApp object for Agent Engine deployment
 adk_app = agent_engines.AdkApp(
     agent=root_agent,
     enable_tracing=True,
 )
-
-print("✅ Agent wrapped in AdkApp!")
-print("   This app is ready for deployment to Agent Engine.")
