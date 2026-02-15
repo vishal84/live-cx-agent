@@ -1,4 +1,4 @@
-#%%
+ #%%
 import os
 import asyncio
 import logging
@@ -38,6 +38,7 @@ client = vertexai.Client(
   location=GOOGLE_CLOUD_LOCATION,
 )
 
+#%% Create on Agent Engine
 # If you don't have an Agent Engine instance already, create an instance.
 remote_app = client.agent_engines.create(
   agent=local_agent,
@@ -67,20 +68,19 @@ print(remote_app.api_resource.name.split("/")[-1])
 # Test on Agent Engine
 deployed_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{DISPLAY_NAME}"')]
 deployed_agent = agent_engines.get(deployed_agent[0])
-print(deployed_agent)
 async def remote_send_message(prompt: str):
     session = await deployed_agent.async_create_session(user_id="cx_user")
     async for event in deployed_agent.async_stream_query(
       user_id="cx_user",
-      #session_id=session["id"],
+      session_id=session["id"],
       message=prompt,
     ):
       print(event)
 
-asyncio.run(remote_send_message("What is the date and time?"))
+await remote_send_message("What is the date and time?")
 
 # %%
-# Update the deployed agent (Optional)
+# Update the deployed agent on Agent Engine
 remote_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{DISPLAY_NAME}"')]
 remote_agent = agent_engines.get(remote_agent[0])
 

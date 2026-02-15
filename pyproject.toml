@@ -7,7 +7,8 @@ packages = [{include = "agent"}]
 dependencies = [
     "python-dotenv>=1.0.0",
     "google-cloud-aiplatform[adk,agent_engines]",
-    "google-cloud-storage"
+    "google-cloud-storage",
+    "nest-asyncio"
 ]
 
 [build-system]
