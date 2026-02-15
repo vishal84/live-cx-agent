@@ -38,8 +38,8 @@ client = vertexai.Client(
   location=GOOGLE_CLOUD_LOCATION,
 )
 
-#%% Create on Agent Engine
-# If you don't have an Agent Engine instance already, create an instance.
+#%% 
+# Create on Agent Engine
 remote_app = client.agent_engines.create(
   agent=local_agent,
   config=dict(
@@ -81,7 +81,7 @@ async def remote_send_message(prompt: str):
 await remote_send_message("What is the date and time?")
 
 # %%
-# Update the deployed agent on Agent Engine
+# Update on Agent Engine
 remote_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{DISPLAY_NAME}"')]
 remote_agent = agent_engines.get(remote_agent[0])
 
