@@ -64,7 +64,7 @@ print(remote_app.api_resource.name.split("/")[-1])
 
 #%%
 # Test on Agent Engine
-deployed_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{display_name}"')]
+deployed_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{DISPLAY_NAME}"')]
 deployed_agent = agent_engines.get(deployed_agent[0])
 print(deployed_agent)
 async def remote_send_message(prompt: str):
@@ -80,7 +80,7 @@ asyncio.run(remote_send_message("What is the date and time?"))
 
 # %%
 # Update the deployed agent (Optional)
-remote_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{display_name}"')]
+remote_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{DISPLAY_NAME}"')]
 remote_agent = agent_engines.get(remote_agent[0])
 
 remote_agent.update(
