@@ -77,6 +77,7 @@ async def remote_send_message(prompt: str):
     ):
       print(event)
 
+# This will work as its running in a jupyter kernel.
 await remote_send_message("What is the date and time?")
 
 # %%
