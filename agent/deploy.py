@@ -4,6 +4,8 @@ from pathlib import Path
 import vertexai
 from vertexai import agent_engines
 from dotenv import load_dotenv
+import sys
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -18,14 +20,19 @@ GOOGLE_CLOUD_LOCATION=os.getenv("GOOGLE_CLOUD_LOCATION")
 TOPIC_ID=os.getenv("TOPIC_ID")
 
 # Initialize Vertex AI SDK
-vertexai.init(project=GOOGLE_CLOUD_PROJECT, location=GOOGLE_CLOUD_LOCATION)
+vertexai.init(
+  project=GOOGLE_CLOUD_PROJECT, 
+  location=GOOGLE_CLOUD_LOCATION,
+  staging_bucket="gs://live-cx-agent-bucket"
+)
 
 client = vertexai.Client(
   project=GOOGLE_CLOUD_PROJECT,
   location=GOOGLE_CLOUD_LOCATION
 )
 
-from .agent import root_agent
+# from agent import root_agent
+from agent import root_agent
 
 # If you don't have an Agent Engine instance already, create an instance.
 agent_engine_app = agent_engines.create(
@@ -33,8 +40,6 @@ agent_engine_app = agent_engines.create(
   display_name="live-cx-agent",
   description="Live CX Agent",
   env_vars=[
-    "GOOGLE_CLOUD_PROJECT",
-    "GOOGLE_CLOUD_LOCATION",
     # "AGENT_ENGINE_ID",
     "TOPIC_ID"
   ],
@@ -50,4 +55,3 @@ agent_engine_app = agent_engines.create(
 # Print the agent engine ID, you will need it in the later steps to initialize
 # the ADK `VertexAiSessionService`.
 print(agent_engine_app.api_resource.name.split("/")[-1])
-
