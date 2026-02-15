@@ -9,9 +9,6 @@ dependencies = [
     "google-cloud-storage"
 ]
 
-[tool.uv]
-package = true
-
 [tool.hatch.build.targets.wheel]
 packages = ["agent"]
 

@@ -1,3 +1,4 @@
+import os
 import logging
 import asyncio
 from datetime import datetime
@@ -14,13 +15,12 @@ env_path = Path(__file__).parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 # Constants
-MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
-async def live_agent_transfer():
+async def live_agent_transfer() -> str:
     """Transfers the user to a live agent."""
     await asyncio.sleep(5)
-    return "Live agent transfer"
-
+    return "You're being transferred to a live agent."
 
 def date_time_tool() -> str:
     """Returns the current date and time in YYYY-MM-DD HH:MM:SS format."""
