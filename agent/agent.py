@@ -23,7 +23,6 @@ def date_time_tool() -> str:
     """Returns the current date and time in YYYY-MM-DD HH:MM:SS format."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-
 root_agent = LlmAgent(
     name="Reporter",
     model=MODEL_NAME,
