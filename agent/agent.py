@@ -43,7 +43,7 @@ def call_api_tool(tool_context: ToolContext) -> str:
             try:
                 # This is a placeholder API. In a real scenario, this would
                 # be the API endpoint for your live agent service.
-                async with session.get("https://api.artic.edu/api/v1/artworks/129883") as response:
+                async with session.get("https://api.artic.edu/api/v1/artworks/129885") as response:
                     response.raise_for_status()
                     data = await response.json()
                     title = data.get("data", {}).get("title", "Unknown Artwork")
