@@ -1,5 +1,4 @@
 import os
-import asyncio
 import logging
 import vertexai
 from vertexai import agent_engines
@@ -62,22 +61,8 @@ remote_app = client.agent_engines.create(
 
 # Print the agent engine ID, you will need it in the later steps to initialize
 # the ADK `VertexAiSessionService`.
-print(remote_app.api_resource.name.split("/")[-1])
-
-# Test on Agent Engine
-deployed_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{DISPLAY_NAME}"')]
-deployed_agent = agent_engines.get(deployed_agent[0])
-async def remote_send_message(prompt: str):
-    session = await deployed_agent.async_create_session(user_id="cx_user")
-    async for event in deployed_agent.async_stream_query(
-      user_id="cx_user",
-      session_id=session["id"],
-      message=prompt,
-    ):
-      print(event)
-
-# This will work as its running in a jupyter kernel.
-asyncio.run(remote_send_message("What is the date and time?"))
+_agent_engine_id=remote_app.api_resource.name
+print(f"Agent Engine ID: {_agent_engine_id}")
 
 def update_env_file(agent_engine_id, env_file_path):
   """Updates the .env file with the agent engine ID."""
@@ -89,20 +74,8 @@ def update_env_file(agent_engine_id, env_file_path):
 
 # log remote_app
 logging.info(
-    f"Deployed agent to Vertex AI Agent Engine successfully, resource name: {remote_app.resource_name}"
+  f"Deployed agent to Vertex AI Agent Engine successfully, resource name: {_agent_engine_id}"
 )
 
 # Update the .env file with the new Agent Engine ID
-update_env_file(remote_app.resource_name, env_path)
-# # %%
-# # Update on Agent Engine
-# remote_agent = [agent.resource_name for agent in agent_engines.list(filter=f'display_name="{DISPLAY_NAME}"')]
-# remote_agent = agent_engines.get(remote_agent[0])
-
-# remote_agent.update(
-#     requirements=[
-#       "google-cloud-aiplatform[adk,agent_engines]",
-#       "python-dotenv>=1.0.0",
-#       "google-cloud-storage"
-#     ],
-#     extra_packages=["../agent"])
+update_env_file(_agent_engine_id, env_path)
