@@ -1,11 +1,20 @@
 import os
+import uuid
 import logging
-import asyncio
-from datetime import datetime
-from google.adk.agents import LlmAgent
-from pathlib import Path
+import datetime
 from dotenv import load_dotenv
+
+import asyncio
+import aiohttp
+from datetime import datetime
+
+from google.adk.agents import LlmAgent
+from google.adk.tools import ToolContext
 from vertexai import agent_engines
+
+from google.adk.sessions import VertexAiSessionService, Session
+from google.adk.events import Event, EventActions
+from google.genai import types
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -14,13 +23,82 @@ logger = logging.getLogger(__name__)
 env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 load_dotenv(dotenv_path=env_path)
 
+session_service = VertexAiSessionService()
+
 # Constants
 MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
-async def live_agent_transfer() -> str:
-    """Transfers the user to a live agent."""
-    await asyncio.sleep(5)
-    return "You're being transferred to a live agent."
+def call_api_tool(tool_context: ToolContext) -> str:
+    """
+    Starts the live agent transfer in the background and immediately
+    returns a message indicating the transfer is in progress.
+    """
+    
+    async def _long_running_api_call():
+        """The actual API call logic that runs in the background."""
+        logger.info("[Background Task] Starting live agent transfer...")
+        # Simulate a long network delay before making the call
+        await asyncio.sleep(5)
+        async with aiohttp.ClientSession() as session:
+            try:
+                # This is a placeholder API. In a real scenario, this would
+                # be the API endpoint for your live agent service.
+                async with session.get("https://api.artic.edu/api/v1/artworks/129883") as response:
+                    response.raise_for_status()
+                    data = await response.json()
+                    title = data.get("data", {}).get("title", "Unknown Artwork")
+                    
+                    # Simulate adding an event to the session
+                    session = await session_service.get_session(
+                        app_name=os.getenv("AGENT_ENGINE_ID"),
+                        user_id=tool_context.session.user_id,
+                        session_id=tool_context.session.id
+                    )
+
+                    _part = types.Part()
+                    _part.text = f"TITLE: {title}"
+
+                    _content=types.Content()
+                    _content.role = "model"
+                    _content.parts = [ _part ]
+
+                    state_changes = {
+                        "title": title,# Update session state
+                    }  
+
+                    # --- Create Event with Actions ---
+                    actions_with_update = EventActions(state_delta=state_changes)
+                    # This event might represent an internal system action, not just an agent response
+                    system_event = Event(
+                        invocation_id=f"live_agent_{uuid.uuid4()}",
+                        author="tool", # Or 'agent', 'tool' etc.
+                        actions=actions_with_update,
+                        timestamp=datetime.now().timestamp(),
+                        content=_content 
+                        # content might be None or represent the action taken
+                    )
+
+                    # --- Append the Event (This updates the state) ---
+                    await session_service.append_event(session, system_event)
+                    logger.info(f"`append_event` called with explicit state delta: {state_changes}")
+
+                    logger.info(f"[Background Task] Artwork title: {title}")
+                    # In a real application, you might use the result to notify
+                    # the user through another channel or update a system's state.
+
+            except aiohttp.ClientError as e:
+                logger.error(f"[Background Task] Error during API call: {e}")
+
+    # Get the current running asyncio event loop.
+    loop = asyncio.get_running_loop()
+    
+    # Create a background task that runs independently on the event loop.
+    # The current function will not wait for this task to complete.
+    loop.create_task(_long_running_api_call())
+
+    # Immediately return a confirmation message to the LLM.
+    # The LLM will then use this to respond to the user, so the chat is not blocked.
+    return f"I am now transferring you to a live agent. {tool_context.session.id}:{tool_context.user_id}"
 
 def date_time_tool() -> str:
     """Returns the current date and time in YYYY-MM-DD HH:MM:SS format."""
@@ -31,10 +109,10 @@ root_agent = LlmAgent(
     model=MODEL_NAME,
     description="Agent demo of transferring to a live agent.",
     instruction="""You are a live chat agent. When an end user requests to be transferred to a live agent
-    use the `live_agent_transfer` tool to transfer the user to a live agent. Otherwise allow them to also
-    call a date time tool to see the current date and time.
+    use the `call_api_tool` tool to transfer the user to a live agent. 
+    Otherwise allow them to also call a date time tool to see the current date and time.
     """,
-    tools=[live_agent_transfer, date_time_tool]
+    tools=[call_api_tool, date_time_tool],
 )
 
 # Wrap the agent in an AdkApp object for Agent Engine deployment

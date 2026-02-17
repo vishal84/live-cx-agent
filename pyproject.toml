@@ -8,7 +8,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "google-cloud-aiplatform[adk,agent_engines]",
     "google-cloud-storage",
-    "nest-asyncio"
+    "aiohttp"
 ]
 
 [build-system]
