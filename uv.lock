@@ -1095,6 +1095,7 @@ source = { editable = "." }
 dependencies = [
     { name = "google-cloud-aiplatform", extra = ["adk", "agent-engines"] },
     { name = "google-cloud-storage" },
+    { name = "nest-asyncio" },
     { name = "python-dotenv" },
 ]
 
@@ -1102,6 +1103,7 @@ dependencies = [
 requires-dist = [
     { name = "google-cloud-aiplatform", extras = ["adk", "agent-engines"] },
     { name = "google-cloud-storage" },
+    { name = "nest-asyncio" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
 ]
 
@@ -1283,6 +1285,15 @@ wheels = [
     { url = "https://us-python.pkg.dev/artifact-foundry-prod/ah-3p-staging-python/mmh3/mmh3-5.2.0-cp314-cp314t-win32.whl", hash = "sha256:6d541038b3fc360ec538fc116de87462627944765a6750308118f8b509a8eec7" },
     { url = "https://us-python.pkg.dev/artifact-foundry-prod/ah-3p-staging-python/mmh3/mmh3-5.2.0-cp314-cp314t-win_amd64.whl", hash = "sha256:e912b19cf2378f2967d0c08e86ff4c6c360129887f678e27e4dde970d21b3f4d" },
     { url = "https://us-python.pkg.dev/artifact-foundry-prod/ah-3p-staging-python/mmh3/mmh3-5.2.0-cp314-cp314t-win_arm64.whl", hash = "sha256:e7884931fe5e788163e7b3c511614130c2c59feffdc21112290a194487efb2e9" },
+]
+
+[[package]]
+name = "nest-asyncio"
+version = "1.6.0"
+source = { registry = "https://us-python.pkg.dev/artifact-foundry-prod/ah-3p-staging-python/simple/" }
+sdist = { url = "https://us-python.pkg.dev/artifact-foundry-prod/ah-3p-staging-python/nest-asyncio/nest_asyncio-1.6.0.tar.gz", hash = "sha256:6f172d5449aca15afd6c646851f4e31e02c598d553a667e38cafa997cfec55fe" }
+wheels = [
+    { url = "https://us-python.pkg.dev/artifact-foundry-prod/ah-3p-staging-python/nest-asyncio/nest_asyncio-1.6.0-py3-none-any.whl", hash = "sha256:87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c" },
 ]
 
 [[package]]
