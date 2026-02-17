@@ -5,7 +5,6 @@ import vertexai
 from vertexai import agent_engines
 from dotenv import load_dotenv, dotenv_values, set_key
 
-
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
