@@ -49,7 +49,8 @@ remote_app = client.agent_engines.create(
     requirements=[
       "google-cloud-aiplatform[adk,agent_engines]",
       "python-dotenv>=1.0.0",
-      "google-cloud-storage"
+      "google-cloud-storage",
+      "aiohttp"
     ],
     env_vars={
       "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
