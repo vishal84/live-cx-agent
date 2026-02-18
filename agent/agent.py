@@ -60,7 +60,7 @@ def call_api_tool(tool_context: ToolContext) -> str:
                     title = data.get("data", {}).get("title", "Unknown Artwork")
                     
                     # Simulate adding an event to the session
-                    session = await session_service.get_session(
+                    _session = await session_service.get_session(
                         app_name=AGENT_ENGINE_ID,
                         user_id=tool_context.session.user_id,
                         session_id=tool_context.session.id
@@ -88,7 +88,7 @@ def call_api_tool(tool_context: ToolContext) -> str:
                     )
 
                     # --- Append the Event (This updates the state) ---
-                    await session_service.append_event(session, system_event)
+                    await session_service.append_event(_session, system_event)
                     logger.info(f"`append_event` called with explicit state delta: {state_changes}")
 
                     logger.info(f"[Background Task] Artwork title: {title}")
