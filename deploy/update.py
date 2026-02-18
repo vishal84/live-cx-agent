@@ -40,7 +40,8 @@ client = vertexai.Client(
 # Update on Agent Engine
 agent_engine=client.agent_engines.get(name=AGENT_ENGINE_ID)
 
-agent_engine.update(
+client.agent_engines.update(
+    name=AGENT_ENGINE_ID,
     agent=local_agent,
     config=dict(
         agent_framework="google-adk",
@@ -52,7 +53,8 @@ agent_engine.update(
         requirements=[
             "google-cloud-aiplatform[adk,agent_engines]",
             "python-dotenv>=1.0.0",
-            "google-cloud-storage"
+            "google-cloud-storage",
+            "aiohttp"
         ],
         env_vars={
             "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
