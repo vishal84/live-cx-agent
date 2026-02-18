@@ -1,20 +1,9 @@
-import uuid
 import logging
-import datetime
-from dotenv import load_dotenv
 from typing import Optional
-
 import asyncio
-import aiohttp
-from datetime import datetime
 
-from google.adk.agents import LlmAgent
-from google.adk.tools import ToolContext
 from vertexai import agent_engines
 
-from google.adk.sessions import VertexAiSessionService, Session
-from google.adk.events import Event, EventActions
-from google.genai import types
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -102,15 +91,11 @@ class AgentMonitor:
                     if message_to_inject:
                         logger.info(f"Monitor wants to inject: {message_to_inject}")
                         
-                        # Create a Content object to send as the message
-                        _part = types.Part(text=message_to_inject)
-                        _content = types.Content(role="user", parts=[_part])
-
                         # Use async_stream_query to inject the message and trigger UI update
                         query_result = self.app.async_stream_query(
                             session_id=self.session_id,
                             user_id=self.user_id,
-                            message=_content,
+                            message=message_to_inject,
                         )
                         async for _ in query_result:
                             # Consuming the stream ensures the query is fully processed
