@@ -161,7 +161,7 @@ def call_api_tool(tool_context: ToolContext) -> str:
                     )
 
                     _part = types.Part()
-                    _part.text = f"TITLE: {title}"
+                    _part.text = f"{title}"
 
                     _content=types.Content()
                     _content.role = "model"
@@ -206,10 +206,8 @@ def call_api_tool(tool_context: ToolContext) -> str:
                 if event.author == "tool":
                     if event.content:
                         for part in event.content.parts:
-                            # Check for the specific text from the background task
-                            # and make sure we are not reacting to our own messages.
-                            if part.text and part.text.startswith("TITLE:"):
-                                return f"From monitor: {part.text}"
+                            if part.text:
+                                return f"monitor callback: {part.text}"
             return None
 
         monitor = AgentMonitor(
@@ -232,7 +230,7 @@ def call_api_tool(tool_context: ToolContext) -> str:
 
     # Immediately return a confirmation message to the LLM.
     # The LLM will then use this to respond to the user, so the chat is not blocked.
-    return f"I am now transferring you to a live agent. {tool_context.session.id}:{tool_context.user_id}"
+    return f"I am now transferring you to a live agent."
 
 def date_time_tool() -> str:
     """Returns the current date and time in YYYY-MM-DD HH:MM:SS format."""
