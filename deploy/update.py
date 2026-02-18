@@ -59,7 +59,8 @@ client.agent_engines.update(
         env_vars={
             "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
             "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT": "true",
-            "TOPIC_ID": TOPIC_ID
+            "TOPIC_ID": TOPIC_ID,
+            "AGENT_ENGINE_ID": AGENT_ENGINE_ID
         },
     ),
 )

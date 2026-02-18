@@ -17,107 +17,7 @@ from google.adk.sessions import VertexAiSessionService, Session
 from google.adk.events import Event, EventActions
 from google.genai import types
 
-class AgentMonitor:
-    """
-    Monitors an agent session and can inject messages based on conditions.
-    
-    This pattern is useful for:
-    - Safety monitoring (injecting warnings when risky behavior is detected)
-    - Progress tracking (updating user on long-running tasks)
-    - Multi-agent coordination (one agent monitoring another)
-    - Real-time analysis and intervention
-    """
-
-    def __init__(
-        self,
-        session_service,
-        app_name: str,
-        user_id: str,
-        session_id: str,
-        monitor_interval: float = 1.0,
-    ):
-        self.session_service = session_service
-        self.app_name = app_name
-        self.user_id = user_id
-        self.session_id = session_id
-        self.monitor_interval = monitor_interval
-        self.last_event_count = 0
-        self.is_monitoring = False
-        self.monitor_task: Optional[asyncio.Task] = None
-
-    async def start_monitoring(self, on_new_events_callback):
-        """
-        Start background monitoring.
-        
-        Args:
-            on_new_events_callback: Async function called with new events.
-                                   Should return a message to inject (str) or None.
-        """
-        self.is_monitoring = True
-        self.monitor_task = asyncio.create_task(
-            self._monitor_loop(on_new_events_callback)
-        )
-
-    async def stop_monitoring(self):
-        """Stop the background monitoring task."""
-        self.is_monitoring = False
-        if self.monitor_task:
-            self.monitor_task.cancel()
-            try:
-                await self.monitor_task
-            except asyncio.CancelledError:
-                pass
-
-    async def _monitor_loop(self, callback):
-        """Internal monitoring loop."""
-        while self.is_monitoring:
-            try:
-                # Get the current session state
-                session = await self.session_service.get_session(
-                    app_name=self.app_name,
-                    user_id=self.user_id,
-                    session_id=self.session_id,
-                )
-
-                if not session:
-                    break
-
-                current_count = len(session.events)
-
-                # Check for new events
-                if current_count > self.last_event_count:
-                    new_events = session.events[self.last_event_count :]
-                    self.last_event_count = current_count
-
-                    # Call the callback to analyze new events
-                    message_to_inject = await callback(new_events, session)
-
-                    # If callback returns a message, inject it via async_stream_query
-                    # to ensure the frontend updates in real-time.
-                    if message_to_inject:
-                        logger.info(f"Monitor wants to inject: {message_to_inject}")
-                        
-                        # Create a Content object to send as the message
-                        _part = types.Part(text=message_to_inject)
-                        _content = types.Content(role="model", parts=[_part])
-
-                        # Use async_stream_query to inject the message and trigger UI update
-                        query_result = adk_app.async_stream_query(
-                            session_id=self.session_id,
-                            user_id=self.user_id,
-                            message=_content.to_dict(),
-                        )
-                        async for _ in query_result:
-                            # Consuming the stream ensures the query is fully processed
-                            pass
-                        logger.info("Monitor injected message via async_stream_query")
-
-
-                await asyncio.sleep(self.monitor_interval)
-
-            except Exception as e:
-                logger.error(f"Monitor error: {e}")
-                await asyncio.sleep(self.monitor_interval)
+from .agent_monitor import AgentMonitor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -126,24 +26,28 @@ logger = logging.getLogger(__name__)
 env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 load_dotenv(dotenv_path=env_path)
 
-session_service = VertexAiSessionService()
-
 # Constants
+AGENT_ENGINE_ID = os.getenv("AGENT_ENGINE_ID")
 MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 active_monitors = {}
+session_service = VertexAiSessionService()
 
 def call_api_tool(tool_context: ToolContext) -> str:
     """
     Starts the live agent transfer in the background and immediately
     returns a message indicating the transfer is in progress.
     """
+    if not AGENT_ENGINE_ID:
+        raise ValueError("AGENT_ENGINE_ID environment variable not set.")
     
     async def _long_running_api_call():
         """The actual API call logic that runs in the background."""
         logger.info("[Background Task] Starting live agent transfer...")
+        
         # Simulate a long network delay before making the call
         await asyncio.sleep(5)
+
         async with aiohttp.ClientSession() as session:
             try:
                 # This is a placeholder API. In a real scenario, this would
@@ -151,29 +55,29 @@ def call_api_tool(tool_context: ToolContext) -> str:
                 async with session.get("https://api.artic.edu/api/v1/artworks/129884") as response:
                     response.raise_for_status()
                     data = await response.json()
+
+                    # Extract the artwork title from the response
                     title = data.get("data", {}).get("title", "Unknown Artwork")
                     
                     # Simulate adding an event to the session
                     session = await session_service.get_session(
-                        app_name=os.getenv("AGENT_ENGINE_ID"),
+                        app_name=AGENT_ENGINE_ID,
                         user_id=tool_context.session.user_id,
                         session_id=tool_context.session.id
                     )
 
-                    _part = types.Part()
-                    _part.text = f"{title}"
+                    # Add content to add to the session event
+                    _part = types.Part(text=f"{title}")
+                    _content=types.Content(role="model", parts=[_part])
 
-                    _content=types.Content()
-                    _content.role = "model"
-                    _content.parts = [ _part ]
-
+                    # (Optional) Define state changes to update the session's state based on the API result
                     state_changes = {
-                        "title": title,# Update session state
+                        "title": title, # Update session state if needed
                     }  
 
                     # --- Create Event with Actions ---
                     actions_with_update = EventActions(state_delta=state_changes)
-                    # This event might represent an internal system action, not just an agent response
+                    # represent the event as a chat interaction
                     system_event = Event(
                         invocation_id=f"live_agent_{uuid.uuid4()}",
                         author="tool", # Or 'agent', 'tool' etc.
@@ -211,10 +115,12 @@ def call_api_tool(tool_context: ToolContext) -> str:
             return None
 
         monitor = AgentMonitor(
-            session_service,
-            os.getenv("AGENT_ENGINE_ID"),
-            tool_context.session.user_id,
-            session_id,
+            session_service=session_service,
+            app_name=AGENT_ENGINE_ID,
+            user_id=tool_context.session.user_id,
+            session_id=tool_context.session.id,
+            app=adk_app,
+            monitor_interval=1.0,
         )
         
         loop = asyncio.get_running_loop()
