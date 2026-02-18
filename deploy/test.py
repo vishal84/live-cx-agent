@@ -14,7 +14,6 @@ load_dotenv(dotenv_path=env_path)
 env_vars = dotenv_values(dotenv_path=env_path)
 
 DISPLAY_NAME=env_vars.get("DISPLAY_NAME")
-TOPIC_ID=env_vars.get("TOPIC_ID")
 GOOGLE_CLOUD_PROJECT=env_vars.get("GOOGLE_CLOUD_PROJECT")
 GOOGLE_CLOUD_LOCATION=env_vars.get("GOOGLE_CLOUD_LOCATION")
 STAGING_BUCKET=env_vars.get("STAGING_BUCKET")
