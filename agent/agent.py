@@ -73,7 +73,7 @@ def call_api_tool(tool_context: ToolContext) -> str:
                     # (Optional) Define state changes to update the session's state based on the API result
                     state_changes = {
                         "title": title, # Update session state if needed
-                    }  
+                    }
 
                     # --- Create Event with Actions ---
                     actions_with_update = EventActions(state_delta=state_changes)
@@ -88,7 +88,7 @@ def call_api_tool(tool_context: ToolContext) -> str:
                     )
 
                     # --- Append the Event (This updates the state) ---
-                    await session_service.append_event(_session, system_event)
+                    await session_service.append_event(tool_context.session, system_event)
                     logger.info(f"`append_event` called with explicit state delta: {state_changes}")
 
                     logger.info(f"[Background Task] Artwork title: {title}")
