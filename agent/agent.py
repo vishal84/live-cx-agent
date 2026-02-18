@@ -88,7 +88,7 @@ def call_api_tool(tool_context: ToolContext) -> str:
                     )
 
                     # --- Append the Event (This updates the state) ---
-                    await session_service.append_event(tool_context.session, system_event)
+                    await session_service.append_event(_session, system_event)
                     logger.info(f"`append_event` called with explicit state delta: {state_changes}")
 
                     logger.info(f"[Background Task] Artwork title: {title}")
